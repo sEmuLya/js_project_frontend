@@ -10,8 +10,24 @@ class MatchList extends React.Component {
     this.state = {
       teamNameFilter: '',
       sportTypeFilter: '',
-      favoriteFilter: false
+      favoriteFilter: false,
+      teams: [],
+      sports: []
     };
+  }
+
+  async componentDidMount() {
+    try {
+      const teamResponse = await fetch('/teams');
+      const teams = await teamResponse.json();
+      this.setState({ teams });
+
+      const sportResponse = await fetch('/sports');
+      const sports = await sportResponse.json();
+      this.setState({ sports });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }
 
   handleTeamNameChange = (event) => {
@@ -67,23 +83,35 @@ class MatchList extends React.Component {
         <div className="card-body">
           <div className="form-group">
             <label htmlFor="teamNameFilter">Team Name:</label>
-            <input
-              type="text"
+            <select
               className="form-control"
               id="teamNameFilter"
               value={this.state.teamNameFilter}
               onChange={this.handleTeamNameChange}
-            />
+            >
+              <option value="">Select a team</option>
+              {this.state.teams.map((team) => (
+                <option key={team.id} value={team.name}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="sportTypeFilter">Sport Type:</label>
-            <input
-              type="text"
+            <select
               className="form-control"
               id="sportTypeFilter"
               value={this.state.sportTypeFilter}
               onChange={this.handleSportTypeChange}
-            />
+            >
+              <option value="">Select a sport</option>
+              {this.state.sports.map((sport) => (
+                <option key={sport.id} value={sport.name}>
+                  {sport.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group form-check">
             <input
@@ -104,13 +132,9 @@ class MatchList extends React.Component {
             <div style={{ position: "static" }} className="ps ps--active y">
               <div className="ps-content">
                 <ul className="list-group list-group-flush">
-                  {
-                    this.props.matches.map((match) => {
-                      return (
-                        <Match match={match} key={match._id} />
-                      )
-                    })
-                  }
+                  {this.props.matches.map((match) => (
+                    <Match match={match} key={match._id} />
+                  ))}
                 </ul>
               </div>
             </div>
@@ -128,7 +152,7 @@ class MatchList extends React.Component {
 function mapStateProps(state) {
   return {
     matches: [...state.matches]
-  }
+  };
 }
 
 export default connect(mapStateProps)(MatchList);
